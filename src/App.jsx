@@ -1,13 +1,21 @@
 /* eslint-disable no-unused-vars */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import TaskCreate from "./Components/TaskCreate";
 import TaskList from "./Components/TaskList";
+import axios from "axios";
 
 function App() {
   const [tasks, setTasks] = useState([]);
 
-  const createTask = (title, taskDesc) => {
+  const createTask = async (title, taskDesc) => {
+    const response = axios.post("http://localhost:3000/tasks", {
+      title: title,
+      taskDesc,
+    });
+
+    console.log(response);
+
     const createdTasks = [
       ...tasks,
       {
@@ -20,14 +28,28 @@ function App() {
     setTasks(createdTasks); //yeni array'i set etme
   };
 
-  const deleteTaskById = (id) => {
+  const fetchTasks = async () => {
+    const response = await axios.get("http://localhost:3000/tasks");
+    setTasks(response.data);
+  };
+
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  const deleteTaskById = async (id) => {
+    await axios.get(`http://localhost:3000/tasks/${id}`);
     const afterDeletingTasks = tasks.filter((task) => {
       return task.id !== id; //gönderdiğimiz id olmayan id'ye sahip olanları dönecek
     });
     setTasks(afterDeletingTasks); //yeni array oluşturuldu
   };
 
-  const updateTaskById = (id, updatedTitle, updatedTaskDesc) => {
+  const updateTaskById = async (id, updatedTitle, updatedTaskDesc) => {
+    await axios.put(`http://localhost:3000/tasks/${id}`, {
+      title: updatedTitle,
+      taskDesc: updatedTaskDesc,
+    });
     const updatedTasks = tasks.map((task) => {
       if (task.id === id) {
         return { id, title: updatedTitle, taskDesc: updatedTaskDesc };
